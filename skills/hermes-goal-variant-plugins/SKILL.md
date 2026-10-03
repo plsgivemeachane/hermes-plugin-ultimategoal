@@ -126,3 +126,41 @@ grep -i "<name>" ~/.hermes/profiles/<p>/logs/gateway.log   # wrapper line proves
 
 A `capability_check … capability=tools.override decision=deny` line is **normal for every
 plugin** — it is not a fault and does not mean your plugin was rejected.
+
+## Shipping a plugin for other profiles
+
+Repo layout that satisfies **both** install routes, since they check different things:
+
+```
+plugin.yaml                    # root manifest  — plugins install checks the CLONE ROOT
+__init__.py                    # root shim: from .plugins.<name> import register
+distribution.yaml              # profile-distribution manifest — profile install
+plugins/<name>/__init__.py     # the implementation (single source of truth)
+plugins/<name>/plugin.yaml
+skills/<skill>/SKILL.md
+```
+
+`hermes_cli/plugins_cmd.py::_looks_like_plugin_dir` only looks at the clone root, while
+`profile install` wants `plugins/` + `skills/`; the root shim bridges them. Load the root
+shim as a *synthetic package* when testing it — `spec_from_file_location(name, init,
+submodule_search_locations=[repo])` with `hermes_plugins` pre-created as a namespace
+module, exactly as `plugins_loader._load_directory_module` does. A bare `sys.path.insert`
+import fails on the relative import even though the real loader succeeds.
+
+Three CLI behaviours that will silently waste your time:
+
+- **`HERMES_PROFILE` does not scope CLI installs.** `hermes_constants.get_hermes_home()`
+  resolves from `HERMES_HOME`, else the sticky active profile. `HERMES_PROFILE` is read only
+  by kanban as an *author label*. Setting `HERMES_PROFILE=x hermes plugins install …` installs
+  into the active profile with no warning. Use `hermes -p <name> …` or
+  `HERMES_HOME=~/.hermes/profiles/<name>`.
+- **`profile install` needs a full URL** (`github.com/owner/repo`); the `owner/repo`
+  shorthand works for `plugins install` but is rejected here.
+- **`profile install` does not enable the plugin.** It copies files and enables skills; the
+  plugin lands *disabled* by design. Always verify with
+  `hermes -p <name> plugins list --plain | grep <name>` — an unfixed install reads
+  `not enabled`.
+
+Probe plugins with `/usr/local/lib/hermes-agent/venv/bin/python`. Under system python the
+import fails outright (`No module named 'hermes_yaml'`) or every hook silently returns
+`None`, which reads exactly like a broken plugin.

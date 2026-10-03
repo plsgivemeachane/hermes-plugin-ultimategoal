@@ -37,11 +37,21 @@ hermes skills install plsgivemeachane/hermes-plugin-ultimategoal/skills/hermes-g
 **B. As a whole new profile**, pre-loaded with the plugin and the skill:
 
 ```bash
-hermes profile install plsgivemeachane/hermes-plugin-ultimategoal -y
+hermes profile install github.com/plsgivemeachane/hermes-plugin-ultimategoal -y
+hermes -p ultimategoal plugins enable ultimategoal     # REQUIRED — see below
 ```
 
-Route B is the one for prepping new profiles. The profile then needs its own API keys
-(`hermes profile use <name>` → `setup`), but the goal machinery ships with it.
+Route B is the one for prepping new profiles. Note two things the CLI will not tell you:
+
+1. **`profile install` requires a full URL** — `github.com/owner/repo`, not the
+   `owner/repo` shorthand that `plugins install` accepts.
+2. **It does not enable the plugin.** Files are copied and the skill is enabled, but the
+   plugin lands *disabled* by design (distribution installs never auto-enable untrusted
+   code). Run `hermes -p <name> plugins enable ultimategoal` afterwards, or verify with
+   `hermes -p <name> plugins list --plain | grep ultimategoal` — an unfixed install shows
+   `not enabled`.
+
+The profile still needs its own API keys (`hermes -p <name> setup`).
 
 Or by hand — copy `plugins/ultimategoal/` into `~/.hermes/profiles/<name>/plugins/` and
 `skills/hermes-goal-variant-plugins/` into that profile's `skills/`, then
