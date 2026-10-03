@@ -25,22 +25,33 @@ with a full turn budget.
 
 ## Install
 
-```bash
-# on the target profile
-hermes plugins install <owner>/hermes-plugin-ultimategoal --enable
-hermes skills install <owner>/hermes-plugin-ultimategoal/.hermes/skills/hermes-goal-variant-plugins
-```
+Two routes, both landing the same code.
 
-Or by hand — copy `.hermes/plugins/ultimategoal/` into `~/.hermes/profiles/<name>/plugins/`
-and `.hermes/skills/hermes-goal-variant-plugins/` into that profile's `skills/`, then:
+**A. Into an existing profile** — add the command to a profile you already have:
 
 ```bash
-hermes plugins enable ultimategoal
+hermes plugins install plsgivemeachane/hermes-plugin-ultimategoal --enable
+hermes skills install plsgivemeachane/hermes-plugin-ultimategoal/skills/hermes-goal-variant-plugins
 ```
 
-Install the **`.hermes/` host bundle path**, not `skills/<name>` — the hub's skills-guard
-scanner rejects canonical skill paths with foreign-host frontmatter. See the
-`hermes-plugin-lifecycle` skill.
+**B. As a whole new profile**, pre-loaded with the plugin and the skill:
+
+```bash
+hermes profile install plsgivemeachane/hermes-plugin-ultimategoal -y
+```
+
+Route B is the one for prepping new profiles. The profile then needs its own API keys
+(`hermes profile use <name>` → `setup`), but the goal machinery ships with it.
+
+Or by hand — copy `plugins/ultimategoal/` into `~/.hermes/profiles/<name>/plugins/` and
+`skills/hermes-goal-variant-plugins/` into that profile's `skills/`, then
+`hermes plugins enable ultimategoal`.
+
+> **Profile scoping:** `hermes …` acts on the *sticky active* profile, not on `$HERMES_PROFILE`.
+> `HERMES_PROFILE` is only read by kanban as an author label (`hermes_constants.get_hermes_home`
+> resolves from `HERMES_HOME`, falling back to the active profile). To target a specific profile,
+> set `HERMES_HOME=~/.hermes/profiles/<name>` or `hermes profile use <name>` first — otherwise the
+> install lands in the wrong profile with no error.
 
 ## Use
 
@@ -106,7 +117,15 @@ also records the three bugs this build hit, all of which are easy to repeat.
 ## Files
 
 ```
-.hermes/plugins/ultimategoal/__init__.py    # the plugin
-.hermes/plugins/ultimategoal/plugin.yaml    # manifest
-.hermes/skills/hermes-goal-variant-plugins/SKILL.md   # fork recipe + pitfalls
+plugin.yaml                                  # root manifest (route A)
+distribution.yaml                            # profile-distribution manifest (route B)
+__init__.py                                  # root shim re-exporting register()
+plugins/ultimategoal/__init__.py             # the plugin — single source of truth
+plugins/ultimategoal/plugin.yaml             # plugin manifest
+skills/hermes-goal-variant-plugins/SKILL.md  # fork recipe + pitfalls
 ```
+
+The repo root carries a `plugin.yaml` + `__init__.py` shim because `hermes plugins install`
+checks the clone's **root** for a manifest, while `hermes profile install` expects the
+distribution layout (`plugins/`, `skills/`). The shim re-exports `register()` from
+`plugins/ultimategoal/` — one implementation, two entry points.

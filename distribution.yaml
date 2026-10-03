@@ -1,0 +1,16 @@
+# Profile distribution manifest — `hermes profile install <repo>`.
+#
+# Installs a NEW profile pre-loaded with ultimategoal: the plugin enabled and the
+# fork-recipe skill present. User data (sessions, memory, .env) is never owned by this
+# distribution, so `hermes profile update` re-pulls without clobbering anything.
+name: ultimategoal
+version: 1.0.0
+description: "Hermes profile with the ultimategoal plugin — a goal that restarts itself in a fresh session when blocked, budget-out, or when the judge fails."
+author: kuro
+license: MIT
+
+# Only these paths are distribution-owned and refreshed on update. Deliberately NOT
+# SOUL.md, .env, or any session state: the operator owns the profile's identity.
+distribution_owned:
+  - plugins/ultimategoal
+  - skills/hermes-goal-variant-plugins

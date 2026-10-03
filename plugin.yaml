@@ -1,0 +1,11 @@
+name: ultimategoal
+version: 1.0.0
+description: "Self-restarting goal loop for Hermes: /ultimategoal rolls a fresh session and re-runs the goal when a verdict is blocked, budget-out, or judge-failed."
+author: "kuro"
+license: MIT
+provides_hooks:
+  - pre_gateway_dispatch
+
+# Root manifest for `hermes plugins install <repo>`. The plugin body lives in
+# plugins/ultimategoal/ (the profile-distribution layout); the root __init__.py re-exports
+# its register(). Both install routes resolve to the same code.
