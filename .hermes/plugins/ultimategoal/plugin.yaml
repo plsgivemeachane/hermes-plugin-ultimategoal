@@ -1,0 +1,6 @@
+name: ultimategoal
+version: 1.0.0
+description: "Set a goal that survives its own failures: on a non-done, non-continue verdict (blocked/budget/paused) it rolls a FRESH session and restarts the goal, carrying the prior reason forward. /ultimategoal [text | status | clear | attempts]"
+author: "kuro"
+provides_hooks:
+  - pre_gateway_dispatch
